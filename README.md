@@ -43,50 +43,6 @@ flowchart TD
     DataModel <-->|Bolt| Neo4j
 ```
 
-### Request Flow (timeline)
-
-```mermaid
-sequenceDiagram
-    participant Admin as Next.js Admin UI
-    participant DataModel as MS AI-Data-Model
-    participant Agents as MS AI-Agents
-    participant Ollama as Ollama Engine
-    participant Neo4j as Neo4j DB
-
-    rect rgb(180, 210, 255)
-        Note over Admin,Neo4j: 1. Startup — SSE Connection
-        Admin->>DataModel: GET /api/events
-        DataModel-->>Admin: SSE stream (open)
-    end
-
-    rect rgb(255, 210, 180)
-        Note over Admin,Neo4j: 2. Policy Sync
-        Admin->>DataModel: POST /api/sync
-        DataModel->>Ollama: POST /api/generate (extract)
-        Ollama-->>DataModel: structured policies
-        DataModel->>Neo4j: map to graph
-        DataModel-->>Admin: SSE: sync complete
-    end
-
-    rect rgb(180, 255, 180)
-        Note over Admin,Neo4j: 3. Incident Resolution
-        Admin->>DataModel: POST /api/resolve
-        DataModel->>Agents: POST /api/agents/resolve
-        DataModel-->>Admin: 202 Accepted
-        activate Agents
-        Agents->>Ollama: agent.generate(prompt)
-        Ollama-->>Agents: LLM response
-        Agents->>DataModel: GET /api/policy (frame)
-        DataModel-->>Agents: policy frame
-        Agents->>DataModel: POST /api/transaction
-        DataModel->>Neo4j: validate invariants
-        DataModel-->>Agents: result
-        Agents->>DataModel: POST /api/events (trace)
-        DataModel-->>Admin: SSE: processed trace
-        deactivate Agents
-    end
-```
-
 ## Services
 
 | Service          | Description                                   | Port |
