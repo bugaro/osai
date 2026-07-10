@@ -26,14 +26,14 @@ OSAI (Operational Security Agentic Interface) is a production-ready conceptual *
 
 ```mermaid
 flowchart TD
-    Admin[/"Next.js Admin UI&lt;br/&gt;:3000"/]
-    DataModel["MS AI-Data-Model&lt;br/&gt;:3002 · Hono · Neo4j Driver"]
-    Agents["MS AI-Agents&lt;br/&gt;:3001 · Hono · Mastra"]
-    Ollama["Ollama Engine&lt;br/&gt;:11434"]
-    Neo4j[("Neo4j&lt;br/&gt;5.x")]
+    Admin[/"Next.js Admin UI :3000"/]
+    DataModel["MS AI-Data-Model :3002 · Hono · Neo4j Driver"]
+    Agents["MS AI-Agents :3001 · Hono · Mastra"]
+    Ollama["Ollama Engine :11434"]
+    Neo4j[("Neo4j 5.x")]
 
     Admin -->|"① GET /api/events (SSE)"| DataModel
-    Admin -->|"② POST /api/sync&lt;br/&gt;③ POST /api/resolve&lt;br/&gt;④ GET /api/graph"| DataModel
+    Admin -->|"② POST /api/sync · ③ POST /api/resolve · ④ GET /api/graph"| DataModel
     DataModel -->|"POST /api/agents/resolve"| Agents
     Agents -->|"GET /api/policy"| DataModel
     Agents -->|"POST /api/transaction"| DataModel
@@ -53,13 +53,13 @@ sequenceDiagram
     participant Ollama as Ollama Engine
     participant Neo4j as Neo4j DB
 
-    rect rgb(235, 245, 255)
+    rect rgb(180, 210, 255)
         Note over Admin,Neo4j: 1. Startup — SSE Connection
         Admin->>DataModel: GET /api/events
         DataModel-->>Admin: SSE stream (open)
     end
 
-    rect rgb(255, 245, 235)
+    rect rgb(255, 210, 180)
         Note over Admin,Neo4j: 2. Policy Sync
         Admin->>DataModel: POST /api/sync
         DataModel->>Ollama: POST /api/generate (extract)
@@ -68,7 +68,7 @@ sequenceDiagram
         DataModel-->>Admin: SSE: sync complete
     end
 
-    rect rgb(235, 255, 235)
+    rect rgb(180, 255, 180)
         Note over Admin,Neo4j: 3. Incident Resolution
         Admin->>DataModel: POST /api/resolve
         DataModel->>Agents: POST /api/agents/resolve
