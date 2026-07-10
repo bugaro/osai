@@ -1,0 +1,34 @@
+name: osai
+
+services:
+  ai-agents:
+    container_name: osai-ai-agents
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${AI_AGENTS_PORT:-3001}:3001"
+    env_file:
+      - .env.example
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - AI_DATA_MODEL_URL=${AI_DATA_MODEL_URL:-http://ai-data-model:3002}
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://ollama:11434/v1}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-http://alloy:4317}
+      - OTEL_SERVICE_NAME=${OTEL_SERVICE_NAME:-ms-ai-agents}
+      - AI_AGENTS_PORT=${AI_AGENTS_PORT:-3001}
+    depends_on:
+      ai-data-model:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+      ollama-init:
+        condition: service_completed_successfully
+    networks:
+      - default
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s

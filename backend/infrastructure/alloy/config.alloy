@@ -1,0 +1,151 @@
+// =============================================================================
+// SECTION 0: TRACE PIPELINE — OTLP → Tempo
+// =============================================================================
+
+otelcol.receiver.otlp "default" {
+  grpc {
+    endpoint = "0.0.0.0:4317"
+  }
+  http {
+    endpoint = "0.0.0.0:4318"
+  }
+  output {
+    traces = [otelcol.processor.batch.default.input]
+  }
+}
+
+otelcol.processor.batch "default" {
+  output {
+    traces = [otelcol.exporter.otlp.tempo.input]
+  }
+}
+
+otelcol.exporter.otlp "tempo" {
+  client {
+    endpoint = "tempo:4317"
+    tls {
+      insecure = true
+    }
+  }
+}
+
+// =============================================================================
+// SECTION 1: DOCKER LOG COLLECTION (all containers via Docker socket)
+// =============================================================================
+
+discovery.docker "docker" {
+	host             = "unix:///var/run/docker.sock"
+	refresh_interval = "5s"
+}
+
+discovery.relabel "docker" {
+	targets = discovery.docker.docker.targets
+
+	rule {
+		source_labels = ["__meta_docker_container_name"]
+		regex         = "/?(.*)"
+		target_label  = "container"
+	}
+
+	rule {
+		source_labels = ["__meta_docker_container_name"]
+		regex         = "/?(.*)"
+		target_label  = "job"
+	}
+
+	rule {
+		source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+		target_label  = "service"
+	}
+
+	// Strip Docker compose numeric suffix (e.g. osai-alloy-1 → osai-alloy)
+	rule {
+		source_labels = ["container"]
+		regex         = "(.+)-\\d+$"
+		target_label  = "container"
+		replacement   = "$1"
+	}
+
+	rule {
+		source_labels = ["job"]
+		regex         = "(.+)-\\d+$"
+		target_label  = "job"
+		replacement   = "$1"
+	}
+
+	// NOTE: Do NOT use labelkeep here — loki.source.docker needs __meta_docker_container_id
+	// internally to tail container logs. Stripping meta labels with labelkeep causes
+	// loki.source.docker to discover zero containers. The meta labels (__meta_*) are
+	// automatically stripped by Alloy before they reach Loki as index labels.
+}
+
+loki.source.docker "docker" {
+	host             = "unix:///var/run/docker.sock"
+	targets          = discovery.relabel.docker.output
+	forward_to       = [loki.process.docker.receiver]
+}
+
+loki.process "docker" {
+	forward_to = [loki.write.default.receiver]
+
+	// NOTE: loki.source.docker on macOS Docker Desktop delivers raw log lines
+	// (not Docker JSON-wrapped), so no unwrapping stage is needed here.
+	// The entry is already the plain log text as written by the container.
+
+	// 1. Extract structured fields from JSON-logging services
+	stage.match {
+		pipeline_name = "json_services"
+		selector      = "{container=~\"osai-ai-data-model|osai-ai-agents\"}"
+		stage.json {
+			expressions = {
+				level         = "level",
+				correlationId = "correlationId",
+				traceId       = "traceId",
+				requestId     = "requestId",
+				appId         = "appId",
+				agentId       = "agentId",
+			}
+		}
+	}
+
+	// 2. Extract fields from logfmt-style services
+	stage.match {
+		pipeline_name = "logfmt_services"
+      selector      = "{container!~\"osai-ai-data-model|osai-ai-agents|osai-neo4j|osai-ollama\"}"
+		stage.logfmt {
+			mapping = {
+				level         = "level",
+				correlationId = "correlationId",
+			}
+		}
+	}
+
+	// 3. Normalize values to avoid empty label values
+	stage.template {
+		source   = "level"
+		template = "{{ if .Value }}{{ .Value }}{{ else }}unknown{{ end }}"
+	}
+	stage.template {
+		source   = "agentId"
+		template = "{{ if .Value }}{{ .Value }}{{ else }}unknown{{ end }}"
+	}
+
+	// 4. Promote only low-cardinality fields to Loki index labels.
+	// NOTE: traceId is high-cardinality and must NOT be a label — use | json in queries instead.
+	stage.labels {
+		values = {
+			level   = "level",
+			agent   = "agentId",
+		}
+	}
+}
+
+// =============================================================================
+// SECTION 2: LOKI WRITE ENDPOINT
+// =============================================================================
+
+loki.write "default" {
+	endpoint {
+		url = "http://loki:3100/loki/api/v1/push"
+	}
+}

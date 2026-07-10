@@ -1,0 +1,15 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'alloy'
+    static_configs:
+      - targets: ['alloy:12345']
+
+  - job_name: 'ms-ai-data-model'
+    static_configs:
+      - targets: ['osai-ai-data-model:3002']
+
+  - job_name: 'ms-ai-agents'
+    static_configs:
+      - targets: ['osai-ai-agents:3001']

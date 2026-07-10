@@ -1,0 +1,29 @@
+name: osai
+
+services:
+  admin-ui:
+    container_name: osai-admin-ui
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        API_BASE_URL: ${API_BASE_URL:-http://ai-data-model:3002}
+    ports:
+      - "${ADMIN_UI_PORT:-3000}:3000"
+    env_file:
+      - .env.example
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - HOSTNAME=0.0.0.0
+      - KEEP_ALIVE_TIMEOUT=120000
+    depends_on:
+      ai-data-model:
+        condition: service_started
+    networks:
+      - default
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s

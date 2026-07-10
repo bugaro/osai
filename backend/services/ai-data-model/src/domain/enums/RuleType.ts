@@ -1,0 +1,3 @@
+export enum RuleType {
+  DELAY_COMPENSATION = 'DELAY_COMPENSATION',
+}

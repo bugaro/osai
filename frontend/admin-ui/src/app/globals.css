@@ -1,0 +1,113 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =========================================================================
+   shadcn/ui CSS variable overrides for the OSAI dark theme
+   ========================================================================= */
+:root {
+  --background: 218 42% 10%;
+  --foreground: 226 90% 93%;
+  --card: 220 34% 14%;
+  --card-foreground: 226 90% 93%;
+  --popover: 222 33% 15%;
+  --popover-foreground: 226 90% 93%;
+  --primary: 0 0% 100%;
+  --primary-foreground: 210 9% 18%;
+  --secondary: 158 68% 59%;
+  --secondary-foreground: 160 100% 11%;
+  --muted: 220 31% 16%;
+  --muted-foreground: 210 6% 78%;
+  --accent: 220 31% 16%;
+  --accent-foreground: 226 90% 93%;
+  --destructive: 4 100% 85%;
+  --destructive-foreground: 349 100% 20%;
+  --border: 224 10% 27%;
+  --input: 220 27% 18%;
+  --ring: 158 68% 59%;
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: 218 42% 10%;
+  --foreground: 226 90% 93%;
+  --card: 220 34% 14%;
+  --card-foreground: 226 90% 93%;
+  --popover: 222 33% 15%;
+  --popover-foreground: 226 90% 93%;
+  --primary: 0 0% 100%;
+  --primary-foreground: 210 9% 18%;
+  --secondary: 158 68% 59%;
+  --secondary-foreground: 160 100% 11%;
+  --muted: 220 31% 16%;
+  --muted-foreground: 210 6% 78%;
+  --accent: 220 31% 16%;
+  --accent-foreground: 226 90% 93%;
+  --destructive: 4 100% 85%;
+  --destructive-foreground: 349 100% 20%;
+  --border: 224 10% 27%;
+  --input: 220 27% 18%;
+  --ring: 158 68% 59%;
+}
+
+/* =========================================================================
+   Base styles
+   ========================================================================= */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #0b1326;
+  color: #dae2fd;
+  font-family: var(--font-inter, 'Inter', sans-serif);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* =========================================================================
+   Custom scrollbar
+   ========================================================================= */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2d3449;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #444749;
+}
+
+/* =========================================================================
+   Selection
+   ========================================================================= */
+::selection {
+  background-color: #4edea3;
+  color: #003824;
+}
+
+/* =========================================================================
+   Utility classes
+   ========================================================================= */
+.terminal-glow {
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+}
+
+/* =========================================================================
+   Font variables
+   ========================================================================= */
+.font-inter {
+  font-family: var(--font-inter, 'Inter', sans-serif);
+}
+
+.font-jetbrains {
+  font-family: var(--font-jetbrains-mono, 'JetBrains Mono', monospace);
+}

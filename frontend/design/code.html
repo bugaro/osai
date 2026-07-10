@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>OSAI Autonomous Operations Terminal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-tint": "#c4c7c9",
+                        "on-surface-variant": "#c4c7c9",
+                        "on-tertiary-fixed": "#410004",
+                        "tertiary-fixed": "#ffdad7",
+                        "on-tertiary-fixed-variant": "#930013",
+                        "surface-container-high": "#222a3d",
+                        "primary": "#ffffff",
+                        "secondary-container": "#00a572",
+                        "on-primary": "#2d3133",
+                        "primary-fixed": "#e0e3e5",
+                        "background": "#0b1326",
+                        "error-container": "#93000a",
+                        "surface-bright": "#31394d",
+                        "surface-container": "#171f33",
+                        "inverse-surface": "#dae2fd",
+                        "tertiary-container": "#ffdad7",
+                        "tertiary": "#ffffff",
+                        "on-secondary-fixed": "#002113",
+                        "surface-container-highest": "#2d3449",
+                        "on-error-container": "#ffdad6",
+                        "on-surface": "#dae2fd",
+                        "secondary": "#4edea3",
+                        "surface-container-lowest": "#060e20",
+                        "outline-variant": "#444749",
+                        "surface-dim": "#0b1326",
+                        "on-primary-fixed": "#191c1e",
+                        "on-secondary": "#003824",
+                        "secondary-fixed-dim": "#4edea3",
+                        "on-background": "#dae2fd",
+                        "error": "#ffb4ab",
+                        "on-tertiary": "#68000a",
+                        "outline": "#8e9193",
+                        "tertiary-fixed-dim": "#ffb3ad",
+                        "secondary-fixed": "#6ffbbe",
+                        "inverse-primary": "#5c5f61",
+                        "surface": "#0b1326",
+                        "primary-fixed-dim": "#c4c7c9",
+                        "on-secondary-container": "#00311f",
+                        "primary-container": "#e0e3e5",
+                        "on-error": "#690005",
+                        "on-primary-fixed-variant": "#444749",
+                        "inverse-on-surface": "#283044",
+                        "on-tertiary-container": "#c22229",
+                        "on-primary-container": "#626567",
+                        "surface-variant": "#2d3449",
+                        "surface-container-low": "#131b2e",
+                        "on-secondary-fixed-variant": "#005236"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    fontFamily: {
+                        "mono-data": ["JetBrains Mono"],
+                        "display": ["Inter"],
+                        "code-block": ["JetBrains Mono"],
+                        "headline": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "mono-label": ["JetBrains Mono"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #2d3449; border-radius: 2px; }
+        .terminal-glow { text-shadow: 0 0 5px rgba(255,255,255,0.2); }
+        .breach-glow { filter: drop-shadow(0 0 8px #ff4444); }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-sm selection:bg-secondary selection:text-on-secondary">
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-background dark group/design-root overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<!-- Shared Header Component Integration -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-outline-variant px-6 py-3 bg-surface-container-low">
+<div class="flex items-center gap-4 text-primary">
+<div class="size-6 text-secondary">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M24 45.8096C19.6865 45.8096 15.4698 44.5305 11.8832 42.134C8.29667 39.7376 5.50128 36.3314 3.85056 32.3462C2.19985 28.361 1.76794 23.9758 2.60947 19.7452C3.451 15.5145 5.52816 11.6284 8.57829 8.5783C11.6284 5.52817 15.5145 3.45101 19.7452 2.60948C23.9758 1.76795 28.361 2.19986 32.3462 3.85057C36.3314 5.50129 39.7376 8.29668 42.134 11.8833C44.5305 15.4698 45.8096 19.6865 45.8096 24L24 24L24 45.8096Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-primary text-lg font-bold leading-tight tracking-[-0.015em] font-headline">OSAI Autonomous Operations Terminal</h2>
+</div>
+<div class="flex flex-1 justify-end gap-4"></div>
+</header>
+<main class="flex-1 grid grid-cols-12 gap-4 p-4 overflow-auto">
+<!-- Left Column: Operations & Input -->
+<div class="col-span-12 lg:col-span-4 flex flex-col gap-4">
+<!-- System Sync Panel -->
+<section class="bg-surface-container-low border border-outline-variant rounded-xl p-4 flex flex-col gap-3 shadow-lg">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[20px]">sync_alt</span>
+<h3 class="text-headline text-primary">Rule Synchronization</h3>
+</div>
+</div>
+<div class="relative group">
+<textarea class="w-full min-h-[160px] font-mono-data text-code-block bg-surface-container-lowest border border-outline-variant rounded p-3 focus:border-secondary focus:ring-1 focus:ring-secondary/30 transition-all resize-none text-on-surface" placeholder="# Operational Policy Update
+if delivery_delay &gt; 30m:
+  apply_voucher(10.00, CURRENCY_EUR)
+...">1. If a courier is delayed by more than 20 minutes, issue compensation to the client. 2. The base compensation amount for a delivery delay is 5.00 EUR. 3. Maximum refund ceiling for Poznan zone is 15.00 EUR for all tiers.</textarea>
+<div class="absolute bottom-2 right-2 flex gap-2">
+<div class="text-on-surface-variant text-[10px] uppercase font-mono-label bg-surface-container px-2 py-1 rounded">Lines: 12</div>
+</div>
+</div>
+<button class="w-full bg-secondary hover:bg-secondary-fixed-dim text-on-secondary font-bold py-2.5 rounded-lg transition-all flex items-center justify-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-[18px]">publish</span>
+                        Sync Operational Rules
+                    </button>
+</section>
+<!-- Incident Resolution Panel -->
+<section class="bg-surface-container-low border border-outline-variant rounded-xl p-4 flex flex-col gap-4 shadow-lg">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[20px]">assignment_turned_in</span>
+<h3 class="text-headline text-primary">Incident Resolution</h3>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="flex flex-col gap-1">
+<label class="text-mono-label text-outline uppercase">User Identifier</label>
+<input class="bg-surface-container-highest border border-outline-variant rounded p-2 text-sm text-on-surface focus:border-secondary focus:ring-0" type="text" value="OSAI-7729-QX"/>
+</div>
+<div class="flex flex-col gap-1">
+<label class="text-mono-label text-outline uppercase">Client Tier</label>
+<select class="bg-surface-container-highest border border-outline-variant rounded p-2 text-sm text-on-surface focus:border-secondary focus:ring-0">
+<option>Standard</option>
+<option selected="">Prime</option>
+<option>Enterprise</option>
+</select>
+</div>
+<div class="flex flex-col gap-1">
+<label class="text-mono-label text-outline uppercase">Delivery Zone</label>
+<select class="bg-surface-container-highest border border-outline-variant rounded p-2 text-sm text-on-surface focus:border-secondary focus:ring-0"><option>Poznan</option><option>Berlin</option><option>Warsaw</option></select>
+</div>
+<div class="flex flex-col gap-1">
+<label class="text-mono-label text-outline uppercase">Delay Minutes</label>
+<input class="bg-surface-container-highest border border-outline-variant rounded p-2 text-sm text-on-surface focus:border-secondary focus:ring-0" type="number" value="45"/>
+</div>
+</div>
+<button class="w-full border-2 border-secondary text-secondary hover:bg-secondary/10 font-bold py-2.5 rounded-lg transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">bolt</span>
+                        Resolve Incident
+                    </button>
+</section>
+<button class="w-full bg-red-700 hover:bg-red-800 text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg uppercase tracking-wider text-xs border border-red-500/30" id="simulate-breach-btn">
+<span class="material-symbols-outlined text-[18px]">warning</span>
+                    ⚠️ SIMULATE HALLUCINATION (GUARDRAIL BREACH)
+                </button>
+</div>
+<!-- Middle Column: Visualizations -->
+<div class="col-span-12 lg:col-span-5 flex flex-col gap-4">
+<!-- Business Rule Topology -->
+<section class="bg-surface-container-low border border-outline-variant rounded-xl p-4 flex flex-col gap-4 h-full shadow-lg relative overflow-hidden">
+<div class="flex items-center justify-between z-10">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[20px]">hub</span>
+<h3 class="text-headline text-primary">Business Rule Topology</h3>
+</div>
+<div class="flex gap-1">
+<div class="w-2 h-2 rounded-full bg-secondary"></div>
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+</div>
+</div>
+<div class="flex-1 flex items-center justify-center bg-surface-container-lowest rounded-lg border border-outline-variant/30 p-4 relative">
+            <!-- Simulated SVG Network Layout — Top-down hierarchy -->
+            <svg class="w-full h-full max-h-[400px]" viewbox="0 0 500 320" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <marker id="arrowhead" markerheight="7" markerwidth="10" orient="auto" refx="0" refy="3.5">
+                  <polygon fill="#8e9193" points="0 0, 10 3.5, 0 7"></polygon>
+                </marker>
+                <marker id="arrowhead-prime" markerheight="7" markerwidth="10" orient="auto" refx="0" refy="3.5">
+                  <polygon fill="#4edea3" points="0 0, 10 3.5, 0 7"></polygon>
+                </marker>
+              </defs>
+              <!-- Vertical hierarchy connections: Zone → Tier → Limit -->
+              <line marker-end="url(#arrowhead)" stroke="#444749" stroke-width="2" x1="250" x2="160" y1="75" y2="113"></line>
+              <line marker-end="url(#arrowhead)" stroke="#444749" stroke-width="2" x1="250" x2="350" y1="75" y2="113"></line>
+              <line marker-end="url(#arrowhead-prime)" stroke="#4edea3" stroke-width="2" x1="160" x2="160" y1="177" y2="212"></line>
+              <line marker-end="url(#arrowhead)" stroke="#444749" stroke-width="2" x1="350" x2="350" y1="177" y2="212"></line>
+              <!-- Layer 1: Zone -->
+              <g class="cursor-pointer hover:opacity-80 transition-opacity">
+                <rect fill="#2d3449" height="40" rx="4" stroke="#8e9193" stroke-width="1.5" width="120" x="190" y="35"></rect>
+                <text fill="#ffffff" font-family="Inter" font-size="10" font-weight="bold" text-anchor="middle" x="250" y="60">Zone: Poznan</text>
+              </g>
+              <!-- Layer 2: Client Tiers -->
+              <g>
+                <circle cx="160" cy="145" fill="#171f33" r="32" stroke="#4edea3" stroke-width="2"></circle>
+                <text fill="#4edea3" font-family="JetBrains Mono" font-size="9" text-anchor="middle" x="160" y="148">Tier: Prime</text>
+              </g>
+              <g>
+                <circle cx="350" cy="145" fill="#171f33" r="36" stroke="#8e9193" stroke-width="1.5"></circle>
+                <text fill="#dae2fd" font-family="JetBrains Mono" font-size="9" text-anchor="middle" x="350" y="148">Tier: Standard</text>
+              </g>
+              <!-- Layer 3: Limits -->
+              <g id="node-max-refund">
+                <rect fill="#00311f" height="30" rx="15" stroke="#4edea3" stroke-width="1.5" width="110" x="105" y="212"></rect>
+                <text fill="#4edea3" font-family="Inter" font-size="9" text-anchor="middle" x="160" y="232">Absolute ceiling: 15.00 EUR</text>
+              </g>
+              <g>
+                <rect fill="#222a3d" height="30" rx="15" stroke="#8e9193" stroke-width="1.5" width="90" x="305" y="212"></rect>
+                <text fill="#dae2fd" font-family="Inter" font-size="9" text-anchor="middle" x="350" y="232">Base: 5.00 EUR</text>
+              </g>
+            </svg>
+<div class="absolute bottom-4 left-4 right-4 flex items-center justify-between text-[10px] text-outline font-mono-label">
+<span class="">ACTIVE CLUSTERS: 04</span>
+<span class="text-secondary">HEALTH: NOMINAL</span>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column: Trace & Logs -->
+<div class="col-span-12 lg:col-span-3 flex flex-col gap-4">
+<!-- Trace Stream Terminal -->
+<section class="bg-[#060e20] border border-outline-variant rounded-xl flex flex-col h-full shadow-2xl overflow-hidden" id="trace-terminal">
+<div class="flex items-center justify-between px-4 py-2 border-b border-outline-variant bg-surface-container-low">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[18px]">terminal</span>
+<span class="text-xs font-bold font-mono-label uppercase tracking-widest text-on-surface">Trace Stream</span>
+</div>
+<div class="flex gap-1.5">
+<div class="w-2.5 h-2.5 rounded-full bg-error/40 border border-error/60"></div>
+<div class="w-2.5 h-2.5 rounded-full bg-secondary/40 border border-secondary/60"></div>
+</div>
+</div>
+<div class="flex-1 p-4 font-mono-data text-[12px] leading-relaxed overflow-y-auto space-y-1.5 selection:bg-secondary selection:text-on-secondary" id="log-container">
+<div class="text-outline"># system_init: build 4.2.1-stable</div>
+<div class="text-secondary flex gap-2">
+<span class="opacity-50">14:20:01</span>
+<span class="">[INFO] Connection established to POZ-GW-01</span>
+</div>
+<div class="text-on-surface flex gap-2">
+<span class="opacity-50">14:20:02</span>
+<span class="">Checking global operational policy...</span>
+</div>
+<div class="text-secondary flex gap-2">
+<span class="opacity-50">14:20:03</span>
+<span class="">get_delivery_policy: <span class="bg-secondary/20 px-1 rounded">OK</span></span>
+</div>
+<div class="text-on-surface flex gap-2">
+<span class="opacity-50">14:20:05</span>
+<span class="">Validating claim: OSAI-7729-QX</span>
+</div>
+<div class="text-error bg-error-container/20 p-1 px-2 border-l-2 border-error flex items-center gap-2 animate-pulse">
+<span class="opacity-50">14:20:08</span>
+<span class="font-bold">[Security Violation] unauthorized voucher range attempted</span>
+</div>
+<div class="text-outline italic">&gt;&gt; Handled by Guardrail [B-09-SECURITY]</div>
+<div class="text-on-surface flex gap-2">
+<span class="opacity-50">14:20:10</span>
+<span class="">issue_delivery_voucher: <span class="text-secondary">10.00 EUR</span></span>
+</div>
+<div class="text-secondary flex gap-2">
+<span class="opacity-50">14:20:11</span>
+<span class="">[SUCCESS] Policy enforced for Poznan zone</span>
+</div>
+<div class="text-on-surface flex gap-2 animate-pulse border-l-2 border-secondary pl-2" id="active-line">
+<span class="opacity-50">14:20:15</span>
+<span class="">Listening for next event...<span class="inline-block w-1.5 h-3 bg-secondary ml-1 align-middle"></span></span>
+</div>
+</div>
+</section>
+<!-- Status Summary -->
+</div>
+</main>
+<!-- Shared Footer Navigation Integration -->
+<footer class="flex items-center justify-between px-6 py-2 border-t border-outline-variant bg-surface-container-low text-on-surface-variant text-[11px] font-mono-label">
+<div class="flex gap-6">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[14px]">sensors</span>
+<span class="">GW: <span class="text-secondary">ACTIVE</span></span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[14px]">database</span>
+<span class="">RULES: <span class="text-secondary">SYNCED</span></span>
+</div>
+<div class="flex items-center gap-2" id="footer-security">
+<span class="material-symbols-outlined text-[14px]">lock</span>
+<span class="">SEC: <span class="text-secondary" id="security-status">LOCKED</span></span>
+</div>
+</div>
+</footer>
+</div>
+</div>
+<script>
+    // Simulate Hallucination Event
+    document.getElementById('simulate-breach-btn').addEventListener('click', () => {
+        // 1. Trace stream animation & style change
+        const traceTerminal = document.getElementById('trace-terminal');
+        traceTerminal.classList.add('animate-pulse', 'border-red-600', 'bg-red-950/20');
+        
+        // 2. Append new log entry
+        const logContainer = document.getElementById('log-container');
+        const activeLine = document.getElementById('active-line');
+        const newEntry = document.createElement('div');
+        newEntry.className = 'text-error bg-red-900/40 p-1 px-2 border-l-2 border-red-500 font-bold';
+        newEntry.innerHTML = `<span class="opacity-50">14:20:18</span> <span>[Security Violation] 🛡️ Adversarial action detected: attempted over-compensation beyond policy limits.</span>`;
+        logContainer.insertBefore(newEntry, activeLine);
+        
+        // 3. Central graph node glow
+        const targetNode = document.getElementById('node-max-refund');
+        targetNode.classList.add('breach-glow');
+        targetNode.querySelector('rect').setAttribute('stroke', '#ff4444');
+        targetNode.querySelector('rect').setAttribute('stroke-width', '2');
+
+        // 4. Update status bar
+        const statusText = document.getElementById('security-status');
+        statusText.innerText = 'BREACH_CONTAINED';
+        statusText.classList.remove('text-secondary');
+        statusText.classList.add('text-red-500', 'font-bold');
+        
+        // Reset after some time or keep it active to show the "breach"
+    });
+
+    // Animate the line connecting nodes periodically
+    setInterval(() => {
+        const lines = document.querySelectorAll('line');
+        lines.forEach(line => {
+            if (Math.random() > 0.8) {
+                line.style.opacity = '0.3';
+                setTimeout(() => line.style.opacity = '1', 100);
+            }
+        });
+    }, 2000);
+</script>
+</body></html>

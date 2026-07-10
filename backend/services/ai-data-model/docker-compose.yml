@@ -1,0 +1,61 @@
+name: osai
+
+services:
+  ai-data-model:
+    container_name: osai-ai-data-model
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${AI_DATA_MODEL_PORT:-3002}:3002"
+    env_file:
+      - .env.example
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - NEO4J_URI=${NEO4J_URI:-bolt://neo4j:7687}
+      - OLLAMA_URL=http://ollama:11434
+      - OLLAMA_TIMEOUT=${OLLAMA_TIMEOUT:-300000}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-http://alloy:4317}
+      - AI_AGENTS_URL=${AI_AGENTS_URL:-http://ai-agents:3001}
+      - OTEL_SERVICE_NAME=${OTEL_SERVICE_NAME:-ms-ai-data-model}
+    depends_on:
+      neo4j:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+      ollama-init:
+        condition: service_completed_successfully
+    networks:
+      - default
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  neo4j:
+    image: neo4j:5.26.0-community
+    container_name: osai-neo4j
+    ports:
+      - "${NEO4J_BOLT_PORT:-7687}:7687"
+      - "${NEO4J_HTTP_PORT:-7474}:7474"
+    environment:
+      - NEO4J_AUTH=${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-osai_password}
+      - NEO4J_PLUGINS=["apoc"]
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*
+    volumes:
+      - neo4j-data:/data
+      - neo4j-logs:/logs
+    networks:
+      - default
+    healthcheck:
+      test: ["CMD", "neo4j", "status"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+volumes:
+  neo4j-data:
+  neo4j-logs:

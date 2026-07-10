@@ -1,0 +1,118 @@
+name: osai
+
+services:
+  dependency-check:
+    image: node:24-alpine
+    container_name: osai-dependency-check
+    volumes:
+      - ../../:/workspace
+    working_dir: /workspace
+    command:
+      - sh
+      - -c
+      - |
+        echo "=== Bootstrapping & Checking Dependencies ==="
+
+        # Copy .env.example → .env for each service if missing
+        for svc in ai-data-model ai-agents; do
+          if [ ! -f "backend/services/$$svc/.env" ]; then
+            if [ -f "backend/services/$$svc/.env.example" ]; then
+              cp "backend/services/$$svc/.env.example" "backend/services/$$svc/.env"
+              echo "Created backend/services/$$svc/.env"
+            else
+              echo "WARNING: No .env.example found for backend/services/$$svc"
+            fi
+          fi
+        done
+
+        if [ ! -f "frontend/admin-ui/.env" ]; then
+          if [ -f "frontend/admin-ui/.env.example" ]; then
+            cp "frontend/admin-ui/.env.example" "frontend/admin-ui/.env"
+            echo "Created frontend/admin-ui/.env"
+          else
+            echo "WARNING: No .env.example found for frontend/admin-ui"
+          fi
+        fi
+
+        # Install npm dependencies where node_modules is missing
+        NEEDS_INSTALL=false
+        SERVICES="backend/services/ai-data-model backend/services/ai-agents frontend/admin-ui"
+        for dir in $$SERVICES; do
+          if [ ! -d "$$dir/node_modules" ]; then
+            NEEDS_INSTALL=true
+            break
+          fi
+        done
+
+        if [ "$$NEEDS_INSTALL" = true ]; then
+          echo "Dependencies are missing. Installing..."
+          for dir in $$SERVICES; do
+            if [ ! -d "$$dir/node_modules" ]; then
+              echo "Installing in $$dir..."
+              cd "/workspace/$$dir" && npm install
+            else
+              echo "$$dir/node_modules already exists. Skipping."
+            fi
+          done
+        else
+          echo "All dependencies already installed."
+        fi
+
+        echo "=== Bootstrapping Completed ==="
+
+  ollama:
+    image: ollama/ollama:0.30.10
+    container_name: osai-ollama
+    ports:
+      - "${OLLAMA_PORT:-11434}:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    healthcheck:
+      test: [ "CMD", "ollama", "list" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+
+  ollama-init:
+    image: ollama/ollama:0.30.10
+    container_name: osai-ollama-init
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      - OLLAMA_HOST=http://osai-ollama:11434
+    entrypoint: [ "/bin/sh", "-c" ]
+    command:
+      - |
+        echo "=== Pulling Model qwen2.5:3b ==="
+        ollama pull qwen2.5:3b
+        echo "=== Model Pulled Successfully ==="
+
+  ai-data-model:
+    depends_on:
+      dependency-check:
+        condition: service_completed_successfully
+
+  ai-agents:
+    depends_on:
+      dependency-check:
+        condition: service_completed_successfully
+
+  admin-ui:
+    depends_on:
+      dependency-check:
+        condition: service_completed_successfully
+
+include:
+  - path: ./docker-compose.observability.yml
+  - path: ../services/ai-data-model/docker-compose.yml
+  - path: ../services/ai-agents/docker-compose.yml
+  - path: ../../frontend/admin-ui/docker-compose.yml
+
+volumes:
+  ollama-data:
