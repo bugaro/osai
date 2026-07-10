@@ -2,8 +2,10 @@
 
 [![Video Demo](https://img.shields.io/badge/Demo-Watch%20Video-balanced?style=for-the-badge&logo=google-drive&logoColor=white&color=2ea44f)](https://drive.google.com/file/d/1wfi_2UFUx-3gg5wXV_aPIISPOZ4xwFxA/view?usp=sharing)
 
+
 OSAI (Operational Security Agentic Interface) is a production-ready conceptual **demo** that implements the foundational blueprint of an **Enterprise Agentic OS**. Tailored for localized operations, it showcases a real-world validation of how to strictly decouple fuzzy AI reasoning from deterministic business execution—proving that even a lightweight Local LLM can be structurally bounded from ever violating hard corporate policies, budgeting ceilings, or infrastructure safeguards.
 
+![Dashboard Overview](screen1.png)
 ---
 
 ## ⚡️ Core Architectural Innovations
