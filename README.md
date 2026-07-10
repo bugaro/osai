@@ -22,34 +22,69 @@ OSAI (Operational Security Agentic Interface) is a production-ready conceptual *
 
 ## 🗺 System Blueprint & Request Flow
 
-```text
-       [ Unstructured Text ] ➔ [ AI-Data-Model (Neo4j:7687) ]
-                                          ▲
-                                          │ HTTP / Internal API
-                                          ▼
-[ Next.js UI (:3000) ]  💻  ➔ [ AI-Agents (Mastra:3001) ] ➔ [ Validated Actions Only ]
-                                          │
-                                          ▼ Local HTTP API (Clean JSON)
-                               [ AI-Provider (Ollama:11434) ]
+### Service Topology
+
+```mermaid
+flowchart TD
+    Admin[/"Next.js Admin UI&lt;br/&gt;:3000"/]
+    DataModel["MS AI-Data-Model&lt;br/&gt;:3002 · Hono · Neo4j Driver"]
+    Agents["MS AI-Agents&lt;br/&gt;:3001 · Hono · Mastra"]
+    Ollama["Ollama Engine&lt;br/&gt;:11434"]
+    Neo4j[("Neo4j&lt;br/&gt;5.x")]
+
+    Admin -->|"① GET /api/events (SSE)"| DataModel
+    Admin -->|"② POST /api/sync&lt;br/&gt;③ POST /api/resolve&lt;br/&gt;④ GET /api/graph"| DataModel
+    DataModel -->|"POST /api/agents/resolve"| Agents
+    Agents -->|"GET /api/policy"| DataModel
+    Agents -->|"POST /api/transaction"| DataModel
+    Agents -->|"POST /api/events (SSE)"| DataModel
+    Agents -->|"POST /api/generate"| Ollama
+    DataModel -->|"POST /api/generate"| Ollama
+    DataModel <-->|Bolt| Neo4j
 ```
 
-```
-Admin UI (Next.js 15, :3000)
-  │ POST /api/gateway/resolve  →  ms-ai-data-model (/api/resolve)
-  │ POST /api/gateway/sync     →  ms-ai-data-model (/api/sync)
-  │ GET  /api/gateway/graph    →  ms-ai-data-model (/api/graph)
-  │ GET  /api/gateway/events   →  ms-ai-data-model (/api/events SSE)
-  │
-ms-ai-data-model (Hono, :3002)
-  │ POST /api/resolve          →  ms-ai-agents (/api/agents/resolve)
-  │ GET  /api/policy           →  Neo4jPolicyRepository
-  │ POST /api/transaction      →  InvariantEngine (Neo4j-backed)
-  │ POST /api/sync             →  OllamaExtractor → Neo4j
-  │
-ms-ai-agents (Hono/Mastra, :3001)
-  │ POST /api/agents/resolve   →  Mastra ReAct loop
-  │   ├─ get_delivery_policy   →  ms-ai-data-model (/api/policy)
-  │   └─ issue_delivery_voucher → ms-ai-data-model (/api/transaction)
+### Request Flow (timeline)
+
+```mermaid
+sequenceDiagram
+    participant Admin as Next.js Admin UI
+    participant DataModel as MS AI-Data-Model
+    participant Agents as MS AI-Agents
+    participant Ollama as Ollama Engine
+    participant Neo4j as Neo4j DB
+
+    rect rgb(235, 245, 255)
+        Note over Admin,Neo4j: 1. Startup — SSE Connection
+        Admin->>DataModel: GET /api/events
+        DataModel-->>Admin: SSE stream (open)
+    end
+
+    rect rgb(255, 245, 235)
+        Note over Admin,Neo4j: 2. Policy Sync
+        Admin->>DataModel: POST /api/sync
+        DataModel->>Ollama: POST /api/generate (extract)
+        Ollama-->>DataModel: structured policies
+        DataModel->>Neo4j: map to graph
+        DataModel-->>Admin: SSE: sync complete
+    end
+
+    rect rgb(235, 255, 235)
+        Note over Admin,Neo4j: 3. Incident Resolution
+        Admin->>DataModel: POST /api/resolve
+        DataModel->>Agents: POST /api/agents/resolve
+        DataModel-->>Admin: 202 Accepted
+        activate Agents
+        Agents->>Ollama: agent.generate(prompt)
+        Ollama-->>Agents: LLM response
+        Agents->>DataModel: GET /api/policy (frame)
+        DataModel-->>Agents: policy frame
+        Agents->>DataModel: POST /api/transaction
+        DataModel->>Neo4j: validate invariants
+        DataModel-->>Agents: result
+        Agents->>DataModel: POST /api/events (trace)
+        DataModel-->>Admin: SSE: processed trace
+        deactivate Agents
+    end
 ```
 
 ## Services
